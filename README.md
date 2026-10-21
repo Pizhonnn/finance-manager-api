@@ -29,6 +29,7 @@ markdown
 
 bash
 docker compose up --build
+
 Приложение будет доступно по адресам:
 
 Фронтенд: http://localhost:8080/
