@@ -9,16 +9,22 @@ services:
       - "15432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   web:
     build: .
     ports:
       - "8080:8000"
     environment:
-      # Важно: здесь адрес 'db', а не 127.0.0.1, и внутренний порт 5432
       DATABASE_URL: postgresql+psycopg://postgres:admin@db:5432/postgres
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+    command: sh -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000"
 
 volumes:
   postgres_data:
