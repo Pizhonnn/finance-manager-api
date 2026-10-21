@@ -1,0 +1,38 @@
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
+
+from app.dependency import get_current_user, get_db
+from app.models import User
+from app.schemas import CreateWalletRequest, WalletResponse
+from app.service import wallets as wallets_service
+
+router = APIRouter()
+
+
+@router.get("/balance")
+def get_balance(
+    wallet_name: str | None = None,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    # Вызываем сервис для получения баланса кошелька
+    return wallets_service.get_wallet(db, current_user, wallet_name)
+
+
+@router.post("/wallets", response_model=WalletResponse)
+def create_wallet(
+    wallet: CreateWalletRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    # Вызываем сервис для создания нового кошелька
+    return wallets_service.create_wallet(wallet, db, current_user)
+
+@router.get("/wallets", response_model=list[WalletResponse])
+def get_all_wallets(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    # Возвращаем список всех кошельков текущего пользователя
+    wallets = wallets_service.get_all_wallets(db, current_user)
+    return wallets

@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finance Manager | Premium</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome для иконок -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Настройка кастомных цветов в Tailwind -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        dark: '#0f172a',
+                        panel: '#1e293b',
+                        accent: '#3b82f6',
+                        accentHover: '#2563eb',
+                        success: '#10b981',
+                        danger: '#ef4444'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Кастомные стили для glassmorphism */
+        .glass {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-dark text-gray-200 font-sans min-h-screen selection:bg-accent selection:text-white">
+
+    <!-- Шапка -->
+    <header class="glass sticky top-0 z-50 px-6 py-4 shadow-lg">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-white flex items-center gap-3">
+                <i class="fa-solid fa-wallet text-accent"></i> Finance Manager
+            </h1>
+            <div id="user-info" class="hidden items-center gap-4">
+                <span class="text-sm text-gray-400">Вы вошли как: <strong id="current-login" class="text-white"></strong></span>
+                <button onclick="logout()" class="bg-danger/20 text-danger hover:bg-danger hover:text-white px-4 py-2 rounded-lg transition-all duration-300 text-sm font-semibold">
+                    <i class="fa-solid fa-right-from-bracket mr-2"></i>Выйти
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto p-6 mt-8">
+        <!-- Экран входа -->
+        <div id="login-screen" class="max-w-md mx-auto glass p-10 rounded-2xl shadow-2xl animate-fade-in mt-20">
+            <div class="text-center mb-8">
+                <div class="bg-accent/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fa-solid fa-lock text-3xl text-accent"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-white">Добро пожаловать</h2>
+                <p class="text-gray-400 text-sm mt-2">Войдите или создайте аккаунт</p>
+            </div>
+            <input type="text" id="login-input" placeholder="Ваш логин (например, admin)" class="w-full bg-dark/50 border border-gray-700 text-white p-3 rounded-lg mb-4 focus:outline-none focus:border-accent transition-colors">
+            <button onclick="login()" class="w-full bg-accent hover:bg-accentHover text-white font-bold py-3 rounded-lg transition-all duration-300 shadow-lg shadow-accent/30">
+                Войти в систему
+            </button>
+        </div>
+
+        <!-- Экран приложения -->
+        <div id="app-screen" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-6 animate-fade-in">
+
+            <!-- Левая колонка: Кошельки -->
+            <div class="lg:col-span-4 space-y-6">
+                <div class="glass p-6 rounded-2xl shadow-xl">
+                    <h3 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-wallet text-accent"></i> Мои кошельки
+                    </h3>
+                    <div id="wallets-list" class="space-y-3 mb-6 max-h-60 overflow-y-auto pr-2 custom-scrollbar"></div>
+
+                    <div class="border-t border-gray-700 pt-4">
+                        <h4 class="text-sm font-semibold text-gray-400 mb-3">Новый кошелек</h4>
+                        <input type="text" id="new-wallet-name" placeholder="Название" class="w-full bg-dark/50 border border-gray-700 text-white p-2 rounded-lg mb-2 text-sm focus:outline-none focus:border-accent transition-colors">
+                        <select id="new-wallet-currency" class="w-full bg-dark/50 border border-gray-700 text-white p-2 rounded-lg mb-3 text-sm focus:outline-none focus:border-accent transition-colors">
+                            <option value="rub">RUB 🇷🇺</option>
+                            <option value="usd">USD 🇺🇸</option>
+                            <option value="eur">EUR 🇪🇺</option>
+                        </select>
+                        <button onclick="createWallet()" class="w-full bg-success hover:bg-emerald-600 text-white p-2 rounded-lg transition-colors text-sm font-semibold flex justify-center items-center gap-2">
+                            <i class="fa-solid fa-plus"></i> Создать
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Правая колонка: Операции -->
+            <div class="lg:col-span-8 space-y-6">
+                <div class="glass p-6 rounded-2xl shadow-xl">
+                    <h3 class="text-lg font-semibold text-white mb-6 flex items-center gap-2">
+                        <i class="fa-solid fa-money-bill-transfer text-accent"></i> Новая операция
+                    </h3>
+
+                    <div class="flex gap-2 mb-6 bg-dark/50 p-1 rounded-lg">
+                        <button onclick="setOperationType('income')" id="btn-income" class="flex-1 py-2 rounded-md font-semibold transition-all text-sm">Пополнить</button>
+                        <button onclick="setOperationType('expense')" id="btn-expense" class="flex-1 py-2 rounded-md font-semibold transition-all text-sm">Списать</button>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="text-xs text-gray-400 mb-1 block">Кошелек</label>
+                            <select id="op-wallet" class="w-full bg-dark/50 border border-gray-700 text-white p-3 rounded-lg text-sm focus:outline-none focus:border-accent"></select>
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-400 mb-1 block">Сумма</label>
+                            <input type="number" id="op-amount" placeholder="0.00" class="w-full bg-dark/50 border border-gray-700 text-white p-3 rounded-lg text-sm focus:outline-none focus:border-accent">
+                        </div>
+                    </div>
+                    <div class="mb-6">
+                        <label class="text-xs text-gray-400 mb-1 block">Описание (необязательно)</label>
+                        <input type="text" id="op-desc" placeholder="Например: Обед" class="w-full bg-dark/50 border border-gray-700 text-white p-3 rounded-lg text-sm focus:outline-none focus:border-accent">
+                    </div>
+
+                    <button onclick="addOperation()" class="w-full bg-accent hover:bg-accentHover text-white font-bold py-3 rounded-lg transition-all duration-300 shadow-lg shadow-accent/30 mb-4">
+                        Выполнить операцию
+                    </button>
+
+                    <div id="message-box" class="hidden p-3 rounded-lg text-center font-semibold text-sm border"></div>
+                </div>
+
+                <!-- История -->
+                <div class="glass p-6 rounded-2xl shadow-xl">
+                    <h3 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-clock-rotate-left text-accent"></i> История операций
+                    </h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="border-b border-gray-700 text-gray-400 text-xs uppercase tracking-wider">
+                                    <th class="pb-3 px-2">Дата</th>
+                                    <th class="pb-3 px-2">Кошелек</th>
+                                    <th class="pb-3 px-2">Тип</th>
+                                    <th class="pb-3 px-2 text-right">Сумма</th>
+                                </tr>
+                            </thead>
+                            <tbody id="operations-table" class="text-sm">
+                                <tr><td colspan="4" class="text-center py-6 text-gray-500">Загрузка...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const API_URL = "/api/v1";
+        let currentToken = localStorage.getItem("token");
+        let currentLogin = localStorage.getItem("login");
+        let currentOperationType = "income";
+        let myWallets = [];
+
+        if (currentToken) showApp();
+
+        // --- АВТОРИЗАЦИЯ ---
+        async function login() {
+            const loginInput = document.getElementById("login-input").value.trim();
+            if (!loginInput) return alert("Введите логин");
+
+            await fetch(`${API_URL}/users`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ login: loginInput })
+            });
+
+            localStorage.setItem("login", loginInput);
+            localStorage.setItem("token", loginInput);
+            currentLogin = loginInput;
+            currentToken = loginInput;
+            showApp();
+        }
+
+        function logout() {
+            localStorage.clear();
+            location.reload();
+        }
+
+        function showApp() {
+            document.getElementById("login-screen").classList.add("hidden");
+            document.getElementById("user-info").classList.remove("hidden");
+            document.getElementById("user-info").classList.add("flex"); // Для выравнивания
+            document.getElementById("app-screen").classList.remove("hidden");
+            document.getElementById("current-login").innerText = currentLogin;
+
+            // Устанавливаем цвет для "Пополнить" по умолчанию
+            setOperationType('income');
+
+            loadWallets();
+            loadOperations();
+        }
+
+        // --- КОШЕЛЬКИ ---
+        async function loadWallets() {
+            const res = await fetch(`${API_URL}/wallets`, {
+                headers: { "Authorization": `Bearer ${currentToken}` }
+            });
+            if (!res.ok) return;
+
+            myWallets = await res.json();
+            const list = document.getElementById("wallets-list");
+
+            if (myWallets.length === 0) {
+                list.innerHTML = "<p class='text-gray-500 text-sm text-center py-4'>У вас пока нет кошельков</p>";
+            } else {
+                list.innerHTML = myWallets.map(w => `
+                    <div class="bg-dark/60 p-4 rounded-xl border border-gray-700 flex justify-between items-center hover:border-accent/50 transition-colors group">
+                        <div>
+                            <div class="font-bold text-white group-hover:text-accent transition-colors">${w.name}</div>
+                            <div class="text-xs text-gray-400 uppercase">${w.currency}</div>
+                        </div>
+                        <div class="text-xl font-bold text-white">${w.amount}</div>
+                    </div>
+                `).join("");
+            }
+
+            const select = document.getElementById("op-wallet");
+            select.innerHTML = myWallets.map(w => `<option value="${w.name}">${w.name} (${w.currency})</option>`).join("");
+        }
+
+        async function createWallet() {
+            const name = document.getElementById("new-wallet-name").value.trim();
+            const currency = document.getElementById("new-wallet-currency").value;
+            if (!name) return alert("Введите имя кошелька");
+
+            const res = await fetch(`${API_URL}/wallets`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "Authorization": `Bearer ${currentToken}` },
+                body: JSON.stringify({ name: name, initial_balance: "0", currency: currency })
+            });
+
+            if (res.ok) {
+                document.getElementById("new-wallet-name").value = "";
+                loadWallets();
+            } else {
+                alert("Ошибка создания кошелька");
+            }
+        }
+
+        // --- ОПЕРАЦИИ ---
+        function setOperationType(type) {
+            currentOperationType = type;
+            const btnIn = document.getElementById("btn-income");
+            const btnEx = document.getElementById("btn-expense");
+
+            if (type === 'income') {
+                btnIn.className = "flex-1 py-2 rounded-md font-semibold transition-all text-sm bg-success text-white shadow-lg";
+                btnEx.className = "flex-1 py-2 rounded-md font-semibold transition-all text-sm text-gray-400 hover:text-white";
+            } else {
+                btnEx.className = "flex-1 py-2 rounded-md font-semibold transition-all text-sm bg-danger text-white shadow-lg";
+                btnIn.className = "flex-1 py-2 rounded-md font-semibold transition-all text-sm text-gray-400 hover:text-white";
+            }
+        }
+
+        async function addOperation() {
+            const walletName = document.getElementById("op-wallet").value;
+            const amount = document.getElementById("op-amount").value;
+            const desc = document.getElementById("op-desc").value;
+
+            if (!walletName || !amount) return alert("Заполните данные");
+
+            const endpoint = currentOperationType === "income" ? "/operations/income" : "/operations/expense";
+            const res = await fetch(`${API_URL}${endpoint}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "Authorization": `Bearer ${currentToken}` },
+                body: JSON.stringify({ wallet_name: walletName, amount: parseFloat(amount), description: desc })
+            });
+
+            const msgBox = document.getElementById("message-box");
+            msgBox.classList.remove("hidden");
+
+            if (res.ok) {
+                msgBox.className = "p-3 rounded-lg text-center font-semibold text-sm border bg-success/20 border-success/50 text-success animate-fade-in";
+                msgBox.innerHTML = '<i class="fa-solid fa-check-circle mr-2"></i>Операция успешно выполнена!';
+                document.getElementById("op-amount").value = "";
+                document.getElementById("op-desc").value = "";
+                loadWallets();
+                loadOperations();
+
+                setTimeout(() => msgBox.classList.add("hidden"), 3000);
+            } else {
+                const err = await res.json();
+                msgBox.className = "p-3 rounded-lg text-center font-semibold text-sm border bg-danger/20 border-danger/50 text-danger animate-fade-in";
+                msgBox.innerHTML = `<i class="fa-solid fa-circle-exclamation mr-2"></i>${err.detail || "Ошибка!"}`;
+            }
+        }
+
+        async function loadOperations() {
+            const res = await fetch(`${API_URL}/operations`, {
+                headers: { "Authorization": `Bearer ${currentToken}` }
+            });
+            if (!res.ok) return;
+
+            const ops = await res.json();
+            const table = document.getElementById("operations-table");
+            const walletMap = {};
+            myWallets.forEach(w => walletMap[w.id] = w.name);
+
+            if (ops.length === 0) {
+                table.innerHTML = "<tr><td colspan='4' class='text-center py-6 text-gray-500'>История пуста</td></tr>";
+                return;
+            }
+
+            table.innerHTML = ops.map(op => `
+                <tr class="border-b border-gray-700/50 hover:bg-white/5 transition-colors">
+                    <td class="py-3 px-2 text-gray-400">${new Date(op.created_at).toLocaleString('ru-RU', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'})}</td>
+                    <td class="py-3 px-2 font-medium">${walletMap[op.wallet_id] || '—'}</td>
+                    <td class="py-3 px-2">
+                        <span class="px-2 py-1 rounded text-xs font-bold ${op.type === 'income' ? 'bg-success/20 text-success' : 'bg-danger/20 text-danger'}">
+                            ${op.type === 'income' ? 'Пополнение' : 'Списание'}
+                        </span>
+                    </td>
+                    <td class="py-3 px-2 text-right font-bold ${op.type === 'income' ? 'text-success' : 'text-danger'}">
+                        ${op.type === 'income' ? '+' : '-'}${op.amount} ${op.currency.toUpperCase()}
+                    </td>
+                </tr>
+            `).join("");
+        }
+    </script>
+</body>
+</html>
