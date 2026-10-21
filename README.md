@@ -27,7 +27,6 @@ markdown
    cd finance-manager-api
 Запустите контейнеры:
 
-bash
 docker compose up --build
 
 Приложение будет доступно по адресам:
