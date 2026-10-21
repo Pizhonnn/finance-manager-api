@@ -1,4 +1,3 @@
-markdown
 # 💰 Finance Manager API
 
 Полноценный Fullstack-сервис для управления личными финансами. 
