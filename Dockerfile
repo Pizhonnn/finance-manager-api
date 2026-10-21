@@ -9,4 +9,5 @@ COPY app /app/app
 # Копируем папку static
 COPY static /app/static
 
+
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
