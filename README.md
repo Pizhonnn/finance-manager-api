@@ -9,6 +9,7 @@
 * **Backend:** Python 3.12, FastAPI, SQLAlchemy 2.0 (Async), Pydantic (валидация)
 * **База данных:** PostgreSQL 16, Alembic (миграции), asyncpg (асинхронный драйвер)
 * **Архитектура:** DDD-lite (Repository, Unit of Work, UseCases)
+* **DI (Dependency Injection):** dependency-injector
 * **Инфраструктура:** Docker, Docker Compose
 * **Тестирование и качество кода:** Pytest (интеграционные тесты), Ruff (линтер), Mypy (статическая типизация)
 * **Frontend:** HTML5, TailwindCSS, Vanilla JS (раздается напрямую из FastAPI)
@@ -70,11 +71,13 @@ alembic upgrade head
 
 app/api — Роутеры (тонкие, только вызывают UseCases). Версионирование через v1/router.py.
 
-app/repository — Классы для работы с БД (наследуются от AbstractRepository).
+app/repository — Классы для работы с БД (доменные методы: get_by_login, create, get_by_wallet_ids).
 
-app/usecases — Бизнес-логика (не зависит от FastAPI и HTTP).
+app/usecases — Бизнес-логика (классы с методом execute, не зависят от FastAPI и HTTP).
 
 app/uow.py — Unit of Work (управление транзакциями: commit/rollback).
+
+app/container.py — DI-контейнер (dependency_injector) для управления зависимостями.
 
 app/models — ORM-модели (SQLAlchemy).
 
