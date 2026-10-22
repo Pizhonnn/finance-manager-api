@@ -27,12 +27,13 @@
    cd finance-manager-api
    ```
 2. Создайте файл .env в корне проекта:
-
+```text
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=admin
 POSTGRES_DB=postgres
 POSTGRES_HOST=db
 POSTGRES_PORT=5432
+```
 
 3. Запустите контейнеры:
 ```bash
