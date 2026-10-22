@@ -18,22 +18,22 @@
 
 ## 🚀 Как запустить проект
 
-Для запуска вам понадобятся только установленные **Docker** и **Docker Compose**.
+Для запуска вам понадобятся установленные **Docker** и **Docker Compose**.
 
 1. Клонируйте репозиторий:
    ```bash
    git clone https://github.com/pizhonnn/finance-manager-api.git
    cd finance-manager-api
    ```
-Запустите контейнеры:
+2. Запустите контейнеры:
 ```bash
 docker compose up --build
 ```
-Приложение будет доступно по адресам:
+3. Приложение будет доступно по адресам:
 
-Фронтенд: http://localhost:8080/
+**Фронтенд: http://localhost:8080/*
 
-Swagger UI (Документация API): http://localhost:8080/docs
+**Swagger UI (Документация API): http://localhost:8080/docs*
 
 🧪 Тестирование
 Проект покрыт интеграционными тестами с использованием Pytest и SQLite (in-memory). Тесты изолированы и не требуют запущенной базы данных PostgreSQL.
