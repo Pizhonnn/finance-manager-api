@@ -1,17 +1,21 @@
 from fastapi import HTTPException
-from app.uow import UnitOfWork
-from app.schemas import CreateWalletRequest
-from app.models import Wallet
+from models import Wallet
+from schemas import CreateWalletRequest
+from uow import UnitOfWork
 
-async def create_wallet_use_case(uow: UnitOfWork, user_id: int, data: CreateWalletRequest) -> Wallet:
-    existing = await uow.wallets.get_by_name_and_user(user_id, data.name)
-    if existing:
-        raise HTTPException(status_code=409, detail="Wallet already exists")
 
-    wallet = Wallet(
-        name=data.name,
-        amount=data.initial_balance,
-        user_id=user_id,
-        currency=data.currency
-    )
-    return await uow.wallets.add(wallet)
+class CreateWalletUseCase:
+    def __init__(self, uow: UnitOfWork):
+        self.uow = uow
+
+    async def execute(self, user_id: int, data: CreateWalletRequest) -> Wallet:
+        existing = await self.uow.wallets.get_by_name_and_user(user_id, data.name)
+        if existing:
+            raise HTTPException(status_code=409, detail="Wallet already exists")
+
+        return await self.uow.wallets.create(
+            user_id=user_id,
+            name=data.name,
+            amount=data.initial_balance,
+            currency=data.currency,
+        )

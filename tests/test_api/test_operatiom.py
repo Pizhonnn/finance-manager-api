@@ -1,5 +1,6 @@
 from decimal import Decimal
-from app.enum import CurrencyEnum
+
+from app.enums import CurrencyEnum
 from app.models import User, Wallet
 
 
@@ -8,12 +9,7 @@ def test_add_expense_success(db_session, client):
     user = User(login="test")
     db_session.add(user)
     db_session.flush()
-    wallet = Wallet(
-        name="card",
-        amount=200,
-        user_id=user.id,
-        currency=CurrencyEnum.RUB
-    )
+    wallet = Wallet(name="card", amount=200, user_id=user.id, currency=CurrencyEnum.RUB)
     db_session.add(wallet)
     db_session.commit()
     db_session.refresh(wallet)
@@ -39,12 +35,7 @@ def test_add_expense_negative_amount(db_session, client):
     user = User(login="test")
     db_session.add(user)
     db_session.flush()
-    wallet = Wallet(
-        name="card",
-        amount=100,
-        user_id=user.id,
-        currency=CurrencyEnum.RUB
-    )
+    wallet = Wallet(name="card", amount=100, user_id=user.id, currency=CurrencyEnum.RUB)
     db_session.add(wallet)
     db_session.commit()
     db_session.refresh(wallet)

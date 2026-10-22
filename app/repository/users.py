@@ -1,9 +1,9 @@
-from sqlalchemy.ext.asyncio import AsyncSession
+from models import User
 from sqlalchemy import select
-from app.models import User
-from app.repository.base import AbstractRepository
+from sqlalchemy.ext.asyncio import AsyncSession
 
-class UserRepository(AbstractRepository[User]):
+
+class UserRepository:
     def __init__(self, db: AsyncSession):
         self.db = db
 
@@ -11,11 +11,8 @@ class UserRepository(AbstractRepository[User]):
         result = await self.db.execute(select(User).where(User.login == login))
         return result.scalar_one_or_none()
 
-    async def add(self, user: User) -> User:
+    async def create(self, login: str) -> User:
+        user = User(login=login)
         self.db.add(user)
-        await self.db.flush() # flush, чтобы получить id, но не коммитить
+        await self.db.flush()
         return user
-
-    async def get(self, entity_id: int) -> User | None:
-        result = await self.db.execute(select(User).where(User.id == entity_id))
-        return result.scalar_one_or_none()

@@ -1,11 +1,12 @@
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
 from decimal import Decimal
-from app.models import Wallet
-from app.enum import CurrencyEnum
-from app.repository.base import AbstractRepository
 
-class WalletRepository(AbstractRepository[Wallet]):
+from enums import CurrencyEnum
+from models import Wallet
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+
+class WalletRepository:
     def __init__(self, db: AsyncSession):
         self.db = db
 
@@ -19,11 +20,14 @@ class WalletRepository(AbstractRepository[Wallet]):
         result = await self.db.execute(select(Wallet).where(Wallet.user_id == user_id))
         return list(result.scalars().all())
 
-    async def add(self, wallet: Wallet) -> Wallet:
+    async def create(
+        self, user_id: int, name: str, amount: Decimal, currency: CurrencyEnum
+    ) -> Wallet:
+        wallet = Wallet(name=name, amount=amount, user_id=user_id, currency=currency)
         self.db.add(wallet)
         await self.db.flush()
         return wallet
 
-    async def get(self, entity_id: int) -> Wallet | None:
-        result = await self.db.execute(select(Wallet).where(Wallet.id == entity_id))
+    async def get_by_id(self, wallet_id: int) -> Wallet | None:
+        result = await self.db.execute(select(Wallet).where(Wallet.id == wallet_id))
         return result.scalar_one_or_none()

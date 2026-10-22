@@ -4,11 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Finance Manager | Premium</title>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome для иконок -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Настройка кастомных цветов в Tailwind -->
     <script>
         tailwind.config = {
             theme: {
@@ -26,25 +23,18 @@
         }
     </script>
     <style>
-        /* Кастомные стили для glassmorphism */
         .glass {
             background: rgba(30, 41, 59, 0.7);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
-        .animate-fade-in {
-            animation: fadeIn 0.3s ease-in-out;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        .animate-fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body class="bg-dark text-gray-200 font-sans min-h-screen selection:bg-accent selection:text-white">
 
-    <!-- Шапка -->
     <header class="glass sticky top-0 z-50 px-6 py-4 shadow-lg">
         <div class="container mx-auto flex justify-between items-center">
             <h1 class="text-2xl font-bold text-white flex items-center gap-3">
@@ -60,7 +50,6 @@
     </header>
 
     <main class="container mx-auto p-6 mt-8">
-        <!-- Экран входа -->
         <div id="login-screen" class="max-w-md mx-auto glass p-10 rounded-2xl shadow-2xl animate-fade-in mt-20">
             <div class="text-center mb-8">
                 <div class="bg-accent/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -75,10 +64,7 @@
             </button>
         </div>
 
-        <!-- Экран приложения -->
         <div id="app-screen" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-6 animate-fade-in">
-
-            <!-- Левая колонка: Кошельки -->
             <div class="lg:col-span-4 space-y-6">
                 <div class="glass p-6 rounded-2xl shadow-xl">
                     <h3 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
@@ -101,7 +87,6 @@
                 </div>
             </div>
 
-            <!-- Правая колонка: Операции -->
             <div class="lg:col-span-8 space-y-6">
                 <div class="glass p-6 rounded-2xl shadow-xl">
                     <h3 class="text-lg font-semibold text-white mb-6 flex items-center gap-2">
@@ -135,7 +120,6 @@
                     <div id="message-box" class="hidden p-3 rounded-lg text-center font-semibold text-sm border"></div>
                 </div>
 
-                <!-- История -->
                 <div class="glass p-6 rounded-2xl shadow-xl">
                     <h3 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
                         <i class="fa-solid fa-clock-rotate-left text-accent"></i> История операций
@@ -169,7 +153,6 @@
 
         if (currentToken) showApp();
 
-        // --- АВТОРИЗАЦИЯ ---
         async function login() {
             const loginInput = document.getElementById("login-input").value.trim();
             if (!loginInput) return alert("Введите логин");
@@ -184,7 +167,7 @@
             localStorage.setItem("token", loginInput);
             currentLogin = loginInput;
             currentToken = loginInput;
-            showApp();
+            await showApp();
         }
 
         function logout() {
@@ -192,21 +175,19 @@
             location.reload();
         }
 
-        function showApp() {
+        async function showApp() {
             document.getElementById("login-screen").classList.add("hidden");
             document.getElementById("user-info").classList.remove("hidden");
-            document.getElementById("user-info").classList.add("flex"); // Для выравнивания
+            document.getElementById("user-info").classList.add("flex");
             document.getElementById("app-screen").classList.remove("hidden");
             document.getElementById("current-login").innerText = currentLogin;
 
-            // Устанавливаем цвет для "Пополнить" по умолчанию
             setOperationType('income');
 
-            loadWallets();
-            loadOperations();
+            await loadWallets();
+            await loadOperations();
         }
 
-        // --- КОШЕЛЬКИ ---
         async function loadWallets() {
             const res = await fetch(`${API_URL}/wallets`, {
                 headers: { "Authorization": `Bearer ${currentToken}` }
@@ -247,13 +228,12 @@
 
             if (res.ok) {
                 document.getElementById("new-wallet-name").value = "";
-                loadWallets();
+                await loadWallets();
             } else {
                 alert("Ошибка создания кошелька");
             }
         }
 
-        // --- ОПЕРАЦИИ ---
         function setOperationType(type) {
             currentOperationType = type;
             const btnIn = document.getElementById("btn-income");
@@ -290,8 +270,8 @@
                 msgBox.innerHTML = '<i class="fa-solid fa-check-circle mr-2"></i>Операция успешно выполнена!';
                 document.getElementById("op-amount").value = "";
                 document.getElementById("op-desc").value = "";
-                loadWallets();
-                loadOperations();
+                await loadWallets();
+                await loadOperations();
 
                 setTimeout(() => msgBox.classList.add("hidden"), 3000);
             } else {

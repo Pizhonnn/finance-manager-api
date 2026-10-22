@@ -1,7 +1,8 @@
+from repository.operations import OperationRepository
+from repository.users import UserRepository
+from repository.wallets import WalletRepository
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.repository.users import UserRepository
-from app.repository.wallets import WalletRepository
-from app.repository.operations import OperationRepository
+
 
 class UnitOfWork:
     def __init__(self, db: AsyncSession):
@@ -18,3 +19,4 @@ class UnitOfWork:
             await self.db.rollback()
         else:
             await self.db.commit()
+        await self.db.close()

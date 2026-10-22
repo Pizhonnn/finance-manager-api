@@ -3,7 +3,7 @@ from decimal import Decimal
 
 from pydantic import BaseModel, Field, field_validator
 
-from app.enum import CurrencyEnum
+from app.enums import CurrencyEnum
 
 # --- СХЕМЫ ДЛЯ ПОЛЬЗОВАТЕЛЯ ---
 
@@ -23,6 +23,7 @@ class UserResponse(UserRequest):
 
 # --- СХЕМЫ ДЛЯ КОШЕЛЬКА ---
 
+
 class CreateWalletRequest(BaseModel):
     """Схема запроса для создания кошелька."""
 
@@ -41,13 +42,16 @@ class CreateWalletRequest(BaseModel):
 
 class WalletResponse(BaseModel):  # <-- ВЫНЕСИ ЕГО НА УРОВЕНЬ МОДУЛЯ (без отступа)
     """Схема ответа для кошелька."""
+
     model_config = {"from_attributes": True}
     id: int
     name: str
     amount: Decimal
     currency: CurrencyEnum
 
+
 # --- СХЕМЫ ДЛЯ ОПЕРАЦИЙ (ПРИХОД/РАСХОД) ---
+
 
 class OperationRequest(BaseModel):
     """Схема запроса для операций (приход/расход)."""

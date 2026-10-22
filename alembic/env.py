@@ -1,16 +1,15 @@
+import asyncio
 import os
 import sys
-import asyncio
 
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 from logging.config import fileConfig
 
+from database import Base
 from sqlalchemy import pool
-from sqlalchemy.ext.asyncio import async_engine_from_config  # <-- Добавили
+from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from alembic import context
-from app.database import Base
-
 
 config = context.config
 
@@ -49,6 +48,18 @@ def run_migrations_online() -> None:
     """Запуск миграций в online режиме (асинхронно)."""
     asyncio.run(run_async_migrations())
 
+def run_migrations_offline() -> None:
+    """Run migrations in 'offline' mode."""
+    url = config.get_main_option("sqlalchemy.url")
+    context.configure(
+        url=url,
+        target_metadata=target_metadata,
+        literal_binds=True,
+        dialect_opts={"paramstyle": "named"},
+    )
+
+    with context.begin_transaction():
+        context.run_migrations()
 
 if context.is_offline_mode():
     run_migrations_offline()

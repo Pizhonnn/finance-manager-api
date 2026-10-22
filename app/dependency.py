@@ -1,11 +1,11 @@
 from typing import AsyncGenerator
-from fastapi import Depends, HTTPException, status
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
 
-from app.database import AsyncSessionLocal
-from app.models import User
+from database import AsyncSessionLocal
+from fastapi import Depends, HTTPException
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from models import User
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 security = HTTPBearer()
 
