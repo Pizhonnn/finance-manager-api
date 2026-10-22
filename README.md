@@ -24,10 +24,11 @@
    ```bash
    git clone https://github.com/pizhonnn/finance-manager-api.git
    cd finance-manager-api
+   ```
 Запустите контейнеры:
-
+```bash
 docker compose up --build
-
+```
 Приложение будет доступно по адресам:
 
 Фронтенд: http://localhost:8080/
@@ -38,10 +39,13 @@ Swagger UI (Документация API): http://localhost:8080/docs
 Проект покрыт интеграционными тестами с использованием Pytest и SQLite (in-memory). Тесты изолированы и не требуют запущенной базы данных PostgreSQL.
 
 # Установите зависимости локально
+```
 pip install -r requirements.txt
-
+```
 # Запустите тесты
+```
 pytest tests/ -v
+```
 🗄 Миграции базы данных
 В проекте используется Alembic для контроля версий схемы базы данных. При первом запуске таблицы создаются автоматически (в Docker), но если вы хотите применить миграции вручную:
 
