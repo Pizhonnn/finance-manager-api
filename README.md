@@ -2,12 +2,13 @@
 
 Полноценный Fullstack-сервис для управления личными финансами. 
 Позволяет создавать кошельки в разных валютах, отслеживать доходы/расходы и вести историю транзакций. 
-Проект написан с упором на чистую архитектуру и современные практики разработки на Python.
+Проект написан с упором на **чистую архитектуру (DDD-lite)**, **асинхронность** и современные практики разработки на Python.
 
 ## 🛠 Стек технологий
 
-* **Backend:** Python 3.12, FastAPI, SQLAlchemy 2.0 (ORM), Pydantic (валидация)
-* **База данных:** PostgreSQL 16, Alembic (миграции)
+* **Backend:** Python 3.12, FastAPI, SQLAlchemy 2.0 (Async), Pydantic (валидация)
+* **База данных:** PostgreSQL 16, Alembic (миграции), asyncpg (асинхронный драйвер)
+* **Архитектура:** DDD-lite (Repository, Unit of Work, UseCases)
 * **Инфраструктура:** Docker, Docker Compose
 * **Тестирование и качество кода:** Pytest (интеграционные тесты), Ruff (линтер), Mypy (статическая типизация)
 * **Frontend:** HTML5, TailwindCSS, Vanilla JS (раздается напрямую из FastAPI)
@@ -25,11 +26,19 @@
    git clone https://github.com/pizhonnn/finance-manager-api.git
    cd finance-manager-api
    ```
-2. Запустите контейнеры:
+2. Создайте файл .env в корне проекта:
+
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=admin
+POSTGRES_DB=postgres
+POSTGRES_HOST=db
+POSTGRES_PORT=5432
+
+3. Запустите контейнеры:
 ```bash
 docker compose up --build
 ```
-3. Приложение будет доступно по адресам:
+4. Приложение будет доступно по адресам:
 
    **Фронтенд: http://localhost:8080/**
 
@@ -56,18 +65,26 @@ alembic upgrade head
 
 # 🏗 Архитектура проекта
 
-Проект разделен на слои для удобства поддержки и тестирования (паттерн Service/Repository):
+Проект построен по паттерну DDD-lite (без сложного слоя Domain) для четкого разделения ответственности:
 
-app/api — Роутеры (эндпоинты FastAPI)
+app/api — Роутеры (тонкие, только вызывают UseCases). Версионирование через v1/router.py.
 
-app/service — Бизнес-логика (проверки, транзакции)
+app/repository — Классы для работы с БД (наследуются от AbstractRepository).
 
-app/repository — Работа с базой данных (SQLAlchemy запросы)
+app/usecases — Бизнес-логика (не зависит от FastAPI и HTTP).
 
-app/models — ORM-модели
+app/uow.py — Unit of Work (управление транзакциями: commit/rollback).
 
-app/schemas — Схемы Pydantic (валидация запросов и ответов)
+app/models — ORM-модели (SQLAlchemy).
 
-tests — Интеграционные тесты (Pytest)
+app/schemas — Схемы Pydantic (валидация запросов и ответов).
+
+app/config.py — Настройки (Pydantic Settings).
+
+app/dependency.py — Зависимости (get_db, get_current_user).
+
+tests — Интеграционные тесты (Pytest).
+
+
 
 *Автор: [pizhonnn](https://github.com/pizhonnn)*
