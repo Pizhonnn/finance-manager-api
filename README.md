@@ -47,6 +47,7 @@ pytest tests/ -v
 
 alembic upgrade head
 🏗 Архитектура проекта
+
 Проект разделен на слои для удобства поддержки и тестирования (паттерн Service/Repository):
 
 app/api — Роутеры (эндпоинты FastAPI)
