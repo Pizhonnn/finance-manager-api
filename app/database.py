@@ -1,20 +1,15 @@
-import os
+from app.config import settings
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
+from sqlalchemy.orm import declarative_base
 
-from sqlalchemy import create_engine
-from sqlalchemy.orm import declarative_base, sessionmaker
+# Создаем асинхронный движок
+engine = create_async_engine(settings.DATABASE_URL, echo=False)
 
-# Берем URL из окружения (для Docker).
-# Если нет — используем локальный Postgres по умолчанию
-# Обрати внимание на порт 15432 (мы пробрасывали его в Docker Compose)
-DATABASE_URL = os.getenv(
-    "DATABASE_URL", "postgresql+psycopg://postgres:admin@127.0.0.1:15432/postgres"
+# Фабрика асинхронных сессий
+AsyncSessionLocal = async_sessionmaker(
+    bind=engine,
+    class_=AsyncSession,
+    expire_on_commit=False
 )
 
-# Создаем движок. Для Postgres параметры check_same_thread не нужны.
-engine = create_engine(DATABASE_URL)
-
-# Создаем фабрику сессий
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-# Базовый класс для моделей
 Base = declarative_base()

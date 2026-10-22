@@ -1,75 +1,29 @@
-from decimal import Decimal
-
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from sqlalchemy.orm import Session
-
-from app.enum import CurrencyEnum
+from decimal import Decimal
 from app.models import Wallet
+from app.enum import CurrencyEnum
+from app.repository.base import AbstractRepository
 
+class WalletRepository(AbstractRepository[Wallet]):
+    def __init__(self, db: AsyncSession):
+        self.db = db
 
-def is_wallet_exist(db: Session, user_id: int, wallet_name: str) -> bool:
-    return (
-        db.query(Wallet)
-        .filter(Wallet.name == wallet_name, Wallet.user_id == user_id)
-        .first()
-        is not None
-    )
+    async def get_by_name_and_user(self, user_id: int, name: str) -> Wallet | None:
+        result = await self.db.execute(
+            select(Wallet).where(Wallet.name == name, Wallet.user_id == user_id)
+        )
+        return result.scalar_one_or_none()
 
+    async def get_all_by_user(self, user_id: int) -> list[Wallet]:
+        result = await self.db.execute(select(Wallet).where(Wallet.user_id == user_id))
+        return list(result.scalars().all())
 
-def add_income(db: Session, user_id: int, wallet_name: str, amount: Decimal) -> Wallet:
-    stmt = select(Wallet).where(Wallet.name == wallet_name, Wallet.user_id == user_id)
-    wallet = db.execute(stmt).scalar_one()
+    async def add(self, wallet: Wallet) -> Wallet:
+        self.db.add(wallet)
+        await self.db.flush()
+        return wallet
 
-    wallet.amount += amount
-    db.flush()  # Фиксируем изменения в транзакции, но не коммитим
-    return wallet
-
-
-def add_expense(db: Session, user_id: int, wallet_name: str, amount: Decimal) -> Wallet:
-    stmt = select(Wallet).where(Wallet.name == wallet_name, Wallet.user_id == user_id)
-    wallet = db.execute(stmt).scalar_one()
-
-    # Проверка на достаточность средств
-    if wallet.amount < amount:
-        raise ValueError("Insufficient funds")
-
-    wallet.amount -= amount
-    db.flush()
-    return wallet
-
-
-def get_wallets_balance_by_name(db: Session, user_id: int, wallet_name: str) -> Wallet:
-    stmt = select(Wallet).where(Wallet.name == wallet_name, Wallet.user_id == user_id)
-    return db.execute(stmt).scalar_one()
-
-
-def get_all_wallets(db: Session, user_id: int) -> list[Wallet]:
-    stmt = select(Wallet).where(Wallet.user_id == user_id)
-    return list(db.execute(stmt).scalars().all())
-
-
-def get_wallet_by_id(db: Session, user_id: int, wallet_id: int) -> Wallet | None:
-    return (
-        db.query(Wallet)
-        .filter(Wallet.id == wallet_id, Wallet.user_id == user_id)
-        .first()
-    )
-
-
-def create_wallet(
-    db: Session,
-    user_id: int,
-    wallet_name: str,
-    amount: Decimal,
-    currency: CurrencyEnum,
-) -> Wallet:
-    wallet = Wallet(
-        name=wallet_name,
-        amount=amount,
-        user_id=user_id,
-        currency=currency,
-    )
-    db.add(wallet)
-    db.commit()
-    db.refresh(wallet)
-    return wallet
+    async def get(self, entity_id: int) -> Wallet | None:
+        result = await self.db.execute(select(Wallet).where(Wallet.id == entity_id))
+        return result.scalar_one_or_none()

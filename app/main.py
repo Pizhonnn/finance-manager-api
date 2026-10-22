@@ -1,12 +1,17 @@
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
+
 from app.api.v1.operations import router as operations_router
 from app.api.v1.users import router as users_router
-
-# Импортируем роутеры
 from app.api.v1.wallets import router as wallet_router
 from app.middleware import LoggingMiddleware
+
+app = FastAPI(
+    title="Finance API",
+    description="Сервис для управления кошельками и операциями",
+    version="1.0.0",
+)
 
 # Создаём экземпляр приложения FastAPI
 app = FastAPI(
