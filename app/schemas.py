@@ -3,7 +3,7 @@ from decimal import Decimal
 
 from pydantic import BaseModel, Field, field_validator
 
-from app.enums import CurrencyEnum
+from enums import CurrencyEnum  # <-- БЕЗ app.
 
 # --- СХЕМЫ ДЛЯ ПОЛЬЗОВАТЕЛЯ ---
 
@@ -40,7 +40,7 @@ class CreateWalletRequest(BaseModel):
         return v
 
 
-class WalletResponse(BaseModel):  # <-- ВЫНЕСИ ЕГО НА УРОВЕНЬ МОДУЛЯ (без отступа)
+class WalletResponse(BaseModel):
     """Схема ответа для кошелька."""
 
     model_config = {"from_attributes": True}
@@ -50,6 +50,31 @@ class WalletResponse(BaseModel):  # <-- ВЫНЕСИ ЕГО НА УРОВЕНЬ 
     currency: CurrencyEnum
 
 
+# --- ДОМЕННАЯ МОДЕЛЬ КОШЕЛЬКА (для DDD-lite) ---
+
+
+class WalletDomain(BaseModel):
+    """Доменная модель кошелька с бизнес-логикой."""
+
+    model_config = {"from_attributes": True}
+
+    id: int
+    name: str
+    amount: Decimal
+    currency: CurrencyEnum
+    user_id: int
+
+    def add_income(self, amount: Decimal) -> None:
+        """Пополнение кошелька."""
+        self.amount += amount
+
+    def add_expense(self, amount: Decimal) -> None:
+        """Списание с проверкой баланса."""
+        if self.amount < amount:
+            raise ValueError(f"Insufficient funds. Available: {self.amount}")
+        self.amount -= amount
+
+
 # --- СХЕМЫ ДЛЯ ОПЕРАЦИЙ (ПРИХОД/РАСХОД) ---
 
 
@@ -57,7 +82,6 @@ class OperationRequest(BaseModel):
     """Схема запроса для операций (приход/расход)."""
 
     wallet_name: str = Field(..., max_length=127)
-    # Используем Decimal, чтобы не было потери копеек
     amount: Decimal
     description: str | None = Field(None, max_length=255)
 

@@ -1,4 +1,5 @@
 from fastapi import HTTPException
+
 from models import Operation
 from schemas import OperationRequest
 from uow import UnitOfWork
@@ -9,13 +10,19 @@ class AddIncomeUseCase:
         self.uow = uow
 
     async def execute(self, user_id: int, data: OperationRequest) -> Operation:
-        wallet = await self.uow.wallets.get_by_name_and_user(user_id, data.wallet_name)
+        wallet = await self.uow.wallets.get_domain_by_name_and_user(
+            user_id, data.wallet_name
+        )
         if not wallet:
             raise HTTPException(
-                status_code=404, detail=f"Wallet '{data.wallet_name}' not found"
+                status_code=404,
+                detail=f"Wallet '{data.wallet_name}' not found",
             )
 
-        wallet.amount += data.amount
+
+        wallet.add_income(data.amount)
+        await self.uow.wallets.save_domain(wallet)
+
         operation = Operation(
             wallet_id=wallet.id,
             type="income",
@@ -31,19 +38,22 @@ class AddExpenseUseCase:
         self.uow = uow
 
     async def execute(self, user_id: int, data: OperationRequest) -> Operation:
-        wallet = await self.uow.wallets.get_by_name_and_user(user_id, data.wallet_name)
+        wallet = await self.uow.wallets.get_domain_by_name_and_user(
+            user_id, data.wallet_name
+        )
         if not wallet:
             raise HTTPException(
-                status_code=404, detail=f"Wallet '{data.wallet_name}' not found"
+                status_code=404,
+                detail=f"Wallet '{data.wallet_name}' not found",
             )
 
-        if wallet.amount < data.amount:
-            raise HTTPException(
-                status_code=400,
-                detail=f"Insufficient funds. Available: {wallet.amount}",
-            )
+        try:
+            wallet.add_expense(data.amount)
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=str(e))
 
-        wallet.amount -= data.amount
+        await self.uow.wallets.save_domain(wallet)
+
         operation = Operation(
             wallet_id=wallet.id,
             type="expense",
